@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Lego Collection</title>
+  <link rel="stylesheet" href="/css/main.css" />
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .container { max-width: 600px; margin: auto; padding: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; }
+    input[type="text"], input[type="password"], input[type="email"] { 
+      width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    .btn { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+    .btn:hover { background-color: #0056b3; }
+  </style>
+</head>
+<body>
+
+  <%- include('partials/navbar', {page: 'register'}) %>
+
+  <div class="container">
+
+    <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+      <!-- Success message alert -->
+      <div class="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p><%= successMessage %></p>
+      </div>
+      <!-- Link to log in page -->
+      <a href="/login" class="btn">
+        Proceed to Log in
+      </a>
+    <% } else { %>
+      <!-- Register form -->
+      <form action="/register" method="POST">
+        <h2>Register</h2>
+        <p>Please provide your information below</p>
+
+        <div class="form-group">
+          <label for="userName">User Name</label>
+          <input type="text" name="userName" id="userName" placeholder="User Name" required value="<%= typeof userName !== 'undefined' ? userName : '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" name="password" id="password" placeholder="Password" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password2">Confirm Password</label>
+          <input type="password" name="password2" id="password2" placeholder="Confirm Password" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" name="email" id="email" placeholder="Email Address" required>
+        </div>
+
+        <button type="submit" class="btn">Register</button>
+      </form>
+
+      <!-- Error message alert -->
+      <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+        <div class="alert alert-error">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p><%= errorMessage %></p>
+        </div>
+        <% } %>
+      <% } %>
+    </div>
+  </body>
+  </html>
