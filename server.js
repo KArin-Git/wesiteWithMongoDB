@@ -12,7 +12,7 @@ Assignment 6.1
 * Published URL: https://wild-colt-fashion.cyclic.app
 ********************************************************************************/
 const authData = require("./modules/auth-service"); // Adding authData.initialize to the "startup procedure"
-const legoData = require("./modules/legoSets");
+// const legoData = require("./modules/legoSets");
 const clientSessions = require('client-sessions'); // Require Client-Sessions Module
 const path = require("path");
 
