@@ -1,5 +1,5 @@
 /*********************************************************************************
-Assignment 5
+Assignment 6.1
 * I declare that this assignment is my own work in accordance with Seneca Academic Policy.
 * No part of this assignment has been copied manually or electronically from any other source
 * (including web sites) or distributed to other students.
@@ -9,21 +9,43 @@ Assignment 5
 * Email: bapichitchon@myseneca.ca
 * Section: NBB
 * Date: Oct 2023
-* Published URL: https://wild-colt-fashion.cyclic.app
+* Published URL: 
 ********************************************************************************/
+const authData = require("./modules/auth-service"); // Adding authData.initialize to the "startup procedure"
 const legoData = require("./modules/legoSets");
+const clientSessions = require("client-sessions"); // Require Client-Sessions Module
 const path = require("path");
-
 const express = require('express');
 const app = express();
-
 const HTTP_PORT = process.env.PORT || 8080;
+app.set('view engine', 'ejs');
+app.use(express.static('public'));
+
 
 // Middleware for handling form data
 app.use(express.urlencoded({ extended: true }));
-
-app.use(express.static('public'));
-app.set('view engine', 'ejs');
+// Configure Client-Sessions Middleware
+app.use(
+  clientSessions({
+    cookieName: 'session', // this is the object name that will be added to 'req'
+    secret: 'o6LjQ5EVNC28ZgK64hDELM18ScpFQr', // this should be a long un-guessable string.
+    duration: 2 * 60 * 1000, // duration of the session in milliseconds (2 minutes)
+    activeDuration: 1000 * 60, // the session will be extended by this many ms each request (1 minute)
+  })
+);
+// Add Custom Middleware Function:
+app.use((req, res, next) => {
+  res.locals.session = req.session;
+  next();
+});
+// 
+function ensureLogin(req, res, next) {
+  if (!req.session.user) {
+    res.redirect('/login');
+  } else {
+    next();
+  }
+}
 
 app.get('/', (req, res) => {
   res.render("home")
@@ -75,7 +97,7 @@ app.get('/lego/addSet', async (req, res) => {
 });
 
 // POST route for processing the form data from "/lego/addSet"
-app.post('/lego/addSet', async (req, res) => {
+app.post('/lego/addSet', ensureLogin, async (req, res) => {
     try {
       // Make a request to addSet(setData) function (to be added later in legoSets.js)
       await legoData.addSet(req.body);
@@ -89,7 +111,7 @@ app.post('/lego/addSet', async (req, res) => {
 });
 
 // GET route for serving the "/lego/editSet" view
-app.get('/lego/editSet/:num', async (req, res) => {
+app.get('/lego/editSet/:num', ensureLogin, async (req, res) => {
     try {
       // Make a request to getSetByNum(setNum) function with the value from the num route parameter
       const setNum = req.params.num;
@@ -107,7 +129,7 @@ app.get('/lego/editSet/:num', async (req, res) => {
 });
 
 // POST route for processing the form data from "/lego/editSet"
-app.post('/lego/editSet', async (req, res) => {
+app.post('/lego/editSet', ensureLogin, async (req, res) => {
     try {
       // Make a request to editSet(set_num, setData) function (to be added later in legoSets.js module)
       const setNum = req.body.set_num;
@@ -122,7 +144,7 @@ app.post('/lego/editSet', async (req, res) => {
     }
 });
 
-app.get('/lego/deleteSet/:num', async (req, res) => {
+app.get('/lego/deleteSet/:num', ensureLogin, async (req, res) => {
     try {
       const setNum = req.params.num;
   
@@ -137,10 +159,56 @@ app.get('/lego/deleteSet/:num', async (req, res) => {
     }
 });
 
+// login and logout
+app.get('/login', (req, res) => {
+  res.render("login")
+});
+
+app.get('/register', (req, res) => {
+  res.render('register');
+});
+
+app.post('/register', (req, res) => {
+  authData.registerUser(req.body).then(() => {
+    res.render('register', { successMessage: 'User created' });
+  }).catch(err => {
+    res.render('register', { errorMessage: err, userName: req.body.userName });
+  });
+});
+
+app.post('/login', (req, res) => {
+  req.body.userAgent = req.get('User-Agent');
+  authData.checkUser(req.body).then(user => {
+    req.session.user = {
+      userName: user.userName,
+      email: user.email,
+      loginHistory: user.loginHistory
+    };
+    res.redirect('/lego/sets');
+  }).catch(err => {
+    res.render('login', { errorMessage: err, userName: req.body.userName });
+  });
+});
+
+app.get('/logout', (req, res) => {
+  req.session.reset();
+  res.redirect('/');
+});
+
+app.get('/userHistory', ensureLogin, (req, res) => {
+  res.render('userHistory');
+});
+
 app.use((req, res, next) => {
   res.status(404).render("404", {message: "I'm sorry, we're unable to find what you're looking for"});
 });
 
-legoData.initialize().then(()=>{
-  app.listen(HTTP_PORT, () => { console.log(`server listening on: ${HTTP_PORT}`) });
+legoData.initialize()
+.then(authData.initialize) // Add this line to initialize authData
+.then(function(){
+    app.listen(HTTP_PORT, function(){
+        console.log(`app listening on: ${HTTP_PORT}`);
+    });
+}).catch(function(err){
+    console.log(`unable to start server: ${err}`);
 });
