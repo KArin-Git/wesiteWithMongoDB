@@ -13,13 +13,16 @@ Assignment 6.1
 ********************************************************************************/
 const authData = require("./modules/auth-service"); // Adding authData.initialize to the "startup procedure"
 // const legoData = require("./modules/legoSets");
-const clientSessions = require('client-sessions'); // Require Client-Sessions Module
+const legoData = require("./modules/legoSets"); // Require Client-Sessions Module
 const path = require("path");
-
+const clientSessions = require("client-sessions");
 const express = require('express');
 const app = express();
 
 const HTTP_PORT = process.env.PORT || 8080;
+
+app.use(express.static('public'));
+app.set('view engine', 'ejs');
 
 // Middleware for handling form data
 app.use(express.urlencoded({ extended: true }));
@@ -45,10 +48,6 @@ function ensureLogin(req, res, next) {
     next();
   }
 }
-
-
-app.use(express.static('public'));
-app.set('view engine', 'ejs');
 
 app.get('/', (req, res) => {
   res.render("home")
