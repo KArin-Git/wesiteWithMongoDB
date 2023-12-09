@@ -9,7 +9,7 @@ Assignment 6.1
 * Email: bapichitchon@myseneca.ca
 * Section: NBB
 * Date: Oct 2023
-* Published URL: 
+* Published URL: https://dark-ruby-mussel-sari.cyclic.app
 ********************************************************************************/
 const authData = require("./modules/auth-service"); // Adding authData.initialize to the "startup procedure"
 const legoData = require("./modules/legoSets");
